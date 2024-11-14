@@ -1,91 +1,55 @@
 import { useState, useEffect } from "react";
 import TaskForm from "./TaskForm";
 import TaskList from "./TaskList";
+import EditTask from "./EditTask";
 import Filter from "./Filter";
 import "./styles.css";
 
 const Dashboard = () => {
-  // Initialize tasks with a default sample task
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Sample Task",
-      description: "This is a sample task description",
-      dueDate: new Date().toISOString().split("T")[0],
-      priority: "medium",
-      completed: false,
-    },
-  ]);
-
+  // State for managing tasks, search term, active section, filters, and edit modal
+  const [tasks, setTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSection, setActiveSection] = useState("today");
+  const [taskBeingEdited, setTaskBeingEdited] = useState(null);
 
-  // Separate filter states for each section
-  const [upcomingFilter, setUpcomingFilter] = useState("all");
-  const [overdueFilter, setOverdueFilter] = useState("all");
-  const [completedFilter, setCompletedFilter] = useState("all");
-  const [todayFilter, setTodayFilter] = useState("all");
+  // Separate filters for each task section
+  const [filters, setFilters] = useState({
+    today: "all",
+    upcoming: "all",
+    overdue: "all",
+    completed: "all",
+  });
 
+  // Load tasks from localStorage on initial render
   useEffect(() => {
     const storedTasks = JSON.parse(localStorage.getItem("tasks"));
     if (storedTasks) setTasks(storedTasks);
   }, []);
 
+  // Update localStorage whenever tasks change
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
+  // Add a new task
   const addTask = (task) => {
     setTasks([...tasks, { ...task, id: Date.now() }]);
   };
 
+  // Edit an existing task
   const editTask = (updatedTask) => {
     setTasks(
       tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
+    setTaskBeingEdited(null); // Close the edit modal after saving
   };
 
+  // Delete a task by ID
   const deleteTask = (id) => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  // Set today's date to midnight (12:00 AM)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Filter tasks by section
-  const todayTasks = tasks.filter(
-    (task) =>
-      new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime() &&
-      !task.completed
-  );
-
-  const upcomingTasks = tasks.filter(
-    (task) =>
-      new Date(task.dueDate).setHours(0, 0, 0, 0) > today.getTime() &&
-      !task.completed
-  );
-
-  const overdueTasks = tasks.filter(
-    (task) => new Date(task.dueDate) < today && !task.completed
-  );
-
-  const completedTasks = tasks.filter((task) => task.completed);
-
-  // Apply section-specific filters
-  const filteredTasks = (taskList, filter) =>
-    taskList.filter(
-      (task) =>
-        (filter === "all" || task.priority === filter) &&
-        task.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-  // Handle section change
-  const handleSectionChange = (section) => {
-    setActiveSection(section);
-  };
-
-  // Toggle task completion
+  // Toggle task completion status
   const toggleTaskCompletion = (id) => {
     setTasks(
       tasks.map((task) =>
@@ -94,20 +58,51 @@ const Dashboard = () => {
     );
   };
 
-  // Display tasks based on active section
-  const getActiveTasks = () => {
-    switch (activeSection) {
-      case "today":
-        return filteredTasks(todayTasks, todayFilter);
-      case "upcoming":
-        return filteredTasks(upcomingTasks, upcomingFilter);
-      case "overdue":
-        return filteredTasks(overdueTasks, overdueFilter);
-      case "completed":
-        return filteredTasks(completedTasks, completedFilter);
-      default:
-        return [];
-    }
+  // Date setup for filtering tasks
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get filtered task lists for each section
+  const getTasksBySection = () => {
+    const sections = {
+      today: tasks.filter(
+        (task) =>
+          new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime() &&
+          !task.completed
+      ),
+      upcoming: tasks.filter(
+        (task) =>
+          new Date(task.dueDate).setHours(0, 0, 0, 0) > today && !task.completed
+      ),
+      overdue: tasks.filter(
+        (task) => new Date(task.dueDate) < today && !task.completed
+      ),
+      completed: tasks.filter((task) => task.completed),
+    };
+    return sections[activeSection] || [];
+  };
+
+  // Filter tasks by priority and search term
+  const filteredTasks = () => {
+    const sectionTasks = getTasksBySection();
+    const filter = filters[activeSection];
+    return sectionTasks.filter((task) => {
+      const matchesFilter = filter === "all" || task.priority === filter;
+      const matchesSearch = task.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  };
+
+  // Update the active section and reset filters
+  const handleSectionChange = (section) => {
+    setActiveSection(section);
+  };
+
+  // Update filters dynamically based on section
+  const setSectionFilter = (filterValue) => {
+    setFilters({ ...filters, [activeSection]: filterValue });
   };
 
   return (
@@ -116,37 +111,23 @@ const Dashboard = () => {
         <h1>Task Manager</h1>
         <TaskForm addTask={addTask} />
       </header>
+
       <main className="dashboard">
-        {/* side bars */}
         <div className="sidebar">
           <h2>Sections</h2>
           <ul>
-            <li>
-              <button onClick={() => handleSectionChange("today")}>
-                Today's Tasks
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleSectionChange("upcoming")}>
-                Upcoming Tasks
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleSectionChange("overdue")}>
-                Overdue Tasks
-              </button>
-            </li>
-            <li>
-              <button onClick={() => handleSectionChange("completed")}>
-                Completed Tasks
-              </button>
-            </li>
+            {["today", "upcoming", "overdue", "completed"].map((section) => (
+              <li key={section}>
+                <button onClick={() => handleSectionChange(section)}>
+                  {section.charAt(0).toUpperCase() + section.slice(1)}'s Tasks
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
-        {/* main content */}
+
         <div className="task-content">
           <div className="search">
-            {/* search bar */}
             <input
               type="text"
               placeholder="Search tasks..."
@@ -154,235 +135,36 @@ const Dashboard = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          {/* Task list */}
+
           <section>
             <h2>
               {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}{" "}
               Tasks
             </h2>
-
-            {/* Filter buttons for each section */}
-            {activeSection !== "completed" && (
-              <Filter
-                filter={
-                  activeSection === "upcoming"
-                    ? upcomingFilter
-                    : activeSection === "overdue"
-                    ? overdueFilter
-                    : todayFilter
-                }
-                setFilter={
-                  activeSection === "upcoming"
-                    ? setUpcomingFilter
-                    : activeSection === "overdue"
-                    ? setOverdueFilter
-                    : setTodayFilter
-                }
-                section={activeSection}
-              />
-            )}
-
+            <Filter
+              filter={filters[activeSection]}
+              setFilter={setSectionFilter}
+              section={activeSection}
+            />
             <TaskList
-              tasks={getActiveTasks()}
-              editTask={editTask}
+              tasks={filteredTasks()}
               deleteTask={deleteTask}
-              toggleTaskCompletion={toggleTaskCompletion} // Pass the toggle function
+              toggleTaskCompletion={toggleTaskCompletion}
+              onEdit={(task) => setTaskBeingEdited(task)}
             />
           </section>
         </div>
       </main>
+
+      {taskBeingEdited && (
+        <EditTask
+          task={taskBeingEdited}
+          onSave={editTask}
+          onCancel={() => setTaskBeingEdited(null)}
+        />
+      )}
     </div>
   );
 };
 
 export default Dashboard;
-
-// import { useState, useEffect } from "react";
-// import TaskForm from "./TaskForm";
-// import TaskList from "./TaskList";
-// import Filter from "./Filter";
-// import "./styles.css";
-
-// const Dashboard = () => {
-//   // Initialize tasks with a default sample task
-//   const [tasks, setTasks] = useState([
-//     {
-//       id: 1,
-//       title: "Sample Task",
-//       description: "This is a sample task description",
-//       dueDate: new Date().toISOString().split("T")[0],
-//       priority: "medium",
-//       completed: false,
-//     },
-//   ]);
-
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [activeSection, setActiveSection] = useState("today");
-
-//   // Separate filter states for each section
-//   const [upcomingFilter, setUpcomingFilter] = useState("all");
-//   const [overdueFilter, setOverdueFilter] = useState("all");
-//   const [completedFilter, setCompletedFilter] = useState("all");
-//   const [todayFilter, setTodayFilter] = useState("all");
-
-//   useEffect(() => {
-//     const storedTasks = JSON.parse(localStorage.getItem("tasks"));
-//     if (storedTasks) setTasks(storedTasks);
-//   }, []);
-
-//   useEffect(() => {
-//     localStorage.setItem("tasks", JSON.stringify(tasks));
-//   }, [tasks]);
-
-//   const addTask = (task) => {
-//     setTasks([...tasks, { ...task, id: Date.now() }]);
-//   };
-
-//   const editTask = (updatedTask) => {
-//     setTasks(
-//       tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-//     );
-//   };
-
-//   const deleteTask = (id) => {
-//     setTasks(tasks.filter((task) => task.id !== id));
-//   };
-
-//   // Set today's date to midnight (12:00 AM)
-//   const today = new Date();
-//   // Set today's date to 12:00 AM (midnight) for comparison
-//   today.setHours(0, 0, 0, 0);
-
-//   // Filter tasks by section
-//   const todayTasks = tasks.filter(
-//     (task) =>
-//       new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime() &&
-//       !task.completed
-//   );
-
-//   const upcomingTasks = tasks.filter(
-//     (task) =>
-//       new Date(task.dueDate).setHours(0, 0, 0, 0) > today.getTime() &&
-//       !task.completed
-//   );
-
-//   const overdueTasks = tasks.filter(
-//     (task) => new Date(task.dueDate) < today && !task.completed
-//   );
-
-//   const completedTasks = tasks.filter((task) => task.completed);
-
-//   // Apply section-specific filters
-//   const filteredTasks = (taskList, filter) =>
-//     taskList.filter(
-//       (task) =>
-//         (filter === "all" || task.priority === filter) &&
-//         task.title.toLowerCase().includes(searchTerm.toLowerCase())
-//     );
-
-//   // Handle section change
-//   const handleSectionChange = (section) => {
-//     setActiveSection(section);
-//   };
-
-//   // Display tasks based on active section
-//   const getActiveTasks = () => {
-//     switch (activeSection) {
-//       case "today":
-//         return filteredTasks(todayTasks, todayFilter);
-//       case "upcoming":
-//         return filteredTasks(upcomingTasks, upcomingFilter);
-//       case "overdue":
-//         return filteredTasks(overdueTasks, overdueFilter);
-//       case "completed":
-//         return filteredTasks(completedTasks, completedFilter);
-//       default:
-//         return [];
-//     }
-//   };
-
-//   return (
-//     <div className="app">
-//       <header className="app-header">
-//         <h1>Task Manager</h1>
-//         <TaskForm addTask={addTask} />
-//       </header>
-//       <main className="dashboard">
-//         {/* side bars */}
-//         <div className="sidebar">
-//           <h2>Sections</h2>
-//           <ul>
-//             <li>
-//               <button onClick={() => handleSectionChange("today")}>
-//                 Today's Tasks
-//               </button>
-//             </li>
-//             <li>
-//               <button onClick={() => handleSectionChange("upcoming")}>
-//                 Upcoming Tasks
-//               </button>
-//             </li>
-//             <li>
-//               <button onClick={() => handleSectionChange("overdue")}>
-//                 Overdue Tasks
-//               </button>
-//             </li>
-//             <li>
-//               <button onClick={() => handleSectionChange("completed")}>
-//                 Completed Tasks
-//               </button>
-//             </li>
-//           </ul>
-//         </div>
-//         {/* main content */}
-//         <div className="task-content">
-//           <div className="search">
-//             {/* search bar */}
-//             <input
-//               type="text"
-//               placeholder="Search tasks..."
-//               value={searchTerm}
-//               onChange={(e) => setSearchTerm(e.target.value)}
-//             />
-//           </div>
-//           {/* Task list */}
-//           <section>
-//             <h2>
-//               {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}{" "}
-//               Tasks
-//             </h2>
-
-//             {/* Filter buttons for each section */}
-//             {activeSection !== "completed" && (
-//               <Filter
-//                 filter={
-//                   activeSection === "upcoming"
-//                     ? upcomingFilter
-//                     : activeSection === "overdue"
-//                     ? overdueFilter
-//                     : todayFilter
-//                 }
-//                 setFilter={
-//                   activeSection === "upcoming"
-//                     ? setUpcomingFilter
-//                     : activeSection === "overdue"
-//                     ? setOverdueFilter
-//                     : setTodayFilter
-//                 }
-//                 section={activeSection}
-//               />
-//             )}
-
-//             <TaskList
-//               tasks={getActiveTasks()}
-//               editTask={editTask}
-//               deleteTask={deleteTask}
-//             />
-//           </section>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
