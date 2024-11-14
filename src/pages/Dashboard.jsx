@@ -52,10 +52,40 @@ const Dashboard = () => {
     );
   };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const filteredTasks = () => {
+    const sectionsOrder = ["today", "upcoming", "overdue", "completed"];
+    let sectionTasks = [];
 
-  const getTasksBySection = () => {
+    for (
+      let i = sectionsOrder.indexOf(activeSection);
+      i < sectionsOrder.length;
+      i++
+    ) {
+      const section = sectionsOrder[i];
+      const sectionData = getTasksBySection(section);
+      const filter = filters[section];
+
+      const matchingTasks = sectionData.filter((task) => {
+        const matchesFilter = filter === "all" || task.priority === filter;
+        const matchesSearch = task.title
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        return matchesFilter && matchesSearch;
+      });
+
+      if (matchingTasks.length > 0) {
+        sectionTasks = matchingTasks;
+        break;
+      }
+    }
+
+    return sectionTasks;
+  };
+
+  const getTasksBySection = (section) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const sections = {
       today: tasks.filter(
         (task) =>
@@ -71,19 +101,8 @@ const Dashboard = () => {
       ),
       completed: tasks.filter((task) => task.completed),
     };
-    return sections[activeSection] || [];
-  };
 
-  const filteredTasks = () => {
-    const sectionTasks = getTasksBySection();
-    const filter = filters[activeSection];
-    return sectionTasks.filter((task) => {
-      const matchesFilter = filter === "all" || task.priority === filter;
-      const matchesSearch = task.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      return matchesFilter && matchesSearch;
-    });
+    return sections[section] || [];
   };
 
   const handleSectionChange = (section) => {
@@ -92,6 +111,14 @@ const Dashboard = () => {
 
   const setSectionFilter = (filterValue) => {
     setFilters({ ...filters, [activeSection]: filterValue });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const showTaskForm = () => {
+    setIsTaskFormVisible(true);
   };
 
   return (
@@ -120,20 +147,37 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
-          <button onClick={() => setIsTaskFormVisible(true)}>Add Task</button>
+          <button className="nav-add-task" onClick={showTaskForm}>
+            Add Task
+          </button>
         </div>
 
         <div className="task-content">
+          {isTaskFormVisible && (
+            <div className="task-form-popup">
+              <TaskForm
+                addTask={addTask}
+                onCancel={() => setIsTaskFormVisible(false)}
+              />
+            </div>
+          )}
           <section>
-            <h2>
-              {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}{" "}
-              Tasks
-            </h2>
-            <Filter
-              filter={filters[activeSection]}
-              setFilter={setSectionFilter}
-              section={activeSection}
-            />
+            {/* Conditionally render section title and filter */}
+            {searchTerm === "" && (
+              <div className="section-header">
+                <h2>
+                  {activeSection.charAt(0).toUpperCase() +
+                    activeSection.slice(1)}{" "}
+                  Tasks
+                </h2>
+                <Filter
+                  filter={filters[activeSection]}
+                  setFilter={setSectionFilter}
+                  section={activeSection}
+                />
+              </div>
+            )}
+
             <TaskList
               tasks={filteredTasks()}
               deleteTask={deleteTask}
@@ -144,13 +188,6 @@ const Dashboard = () => {
         </div>
       </main>
 
-      {isTaskFormVisible && (
-        <TaskForm
-          addTask={addTask}
-          onCancel={() => setIsTaskFormVisible(false)}
-        />
-      )}
-
       {taskBeingEdited && (
         <EditTask
           task={taskBeingEdited}
@@ -158,6 +195,10 @@ const Dashboard = () => {
           onCancel={() => setTaskBeingEdited(null)}
         />
       )}
+
+      <div className="back-to-top">
+        <button onClick={scrollToTop}>Back to Top</button>
+      </div>
     </div>
   );
 };
