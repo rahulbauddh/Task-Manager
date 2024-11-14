@@ -1,0 +1,220 @@
+/* General styles */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f6fa;
+  color: #333;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header styles */
+.app-header {
+  background-color: #4a90e2;
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header h1 {
+  font-weight: 700;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+/* Dashboard layout */
+.dashboard {
+  display: flex;
+  flex: 1;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Main content area */
+.task-content {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  background-color: #fafbfc;
+}
+
+/* Search box */
+.search {
+  align-self: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.search input {
+  padding: 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 220px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.search input:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+/* Sidebar (sections) */
+.sidebar {
+  width: 220px;
+  background-color: #f7f9fc;
+  padding: 1.5rem;
+  border-right: 1px solid #e0e4e8;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #4a90e2;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.sidebar li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  text-align: left;
+  width: 100%;
+  padding: 0.7rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.sidebar button:hover {
+  background-color: #eaf3ff;
+  color: #4a90e2;
+}
+
+/* Task list and items */
+.task-list {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e4e8;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item h3 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.task-item p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* Buttons */
+button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #3a7bc8;
+}
+
+/* Form styles */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+input, select {
+  padding: 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+input:focus, select:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+/* Edit task modal */
+.edit-task-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  width: 90%;
+  max-width: 400px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e1e4e8;
+  }
+
+  .task-content {
+    padding: 1.5rem;
+  }
+
+  .search {
+    align-self: stretch;
+  }
+
+  .search input {
+    width: 100%;
+  }
+}
