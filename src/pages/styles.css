@@ -146,7 +146,7 @@ body {
 
 /* Buttons */
 button {
-  background-color: #4a90e2;
+  background-color: #4a90e2; /* #56b238 */
   color: white;
   border: none;
   padding: 0.6rem 1rem;
