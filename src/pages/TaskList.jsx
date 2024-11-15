@@ -12,7 +12,7 @@ const TaskList = ({ tasks, deleteTask, toggleTaskCompletion, onEdit }) => {
               task.completed ? "complete" : "incomplete"
             }`}
           >
-            {task.completed ? "Complete" : "Incomplete"}
+            {task.completed ? "Completed" : "Incomplete"}
           </span>
           <h3>{task.title}</h3>
           <p>{task.description}</p>
