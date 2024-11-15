@@ -5,6 +5,7 @@ const SearchList = ({ s_title, tasks, deleteTask, toggleTaskCompletion, onEdit }
   // Filter tasks based on search term across all tasks
   const filteredTasks = tasks.filter((task) =>
     task.title.toLowerCase().includes(s_title.toLowerCase())
+    // console.log("");
   );
 
   return (

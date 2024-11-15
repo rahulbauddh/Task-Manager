@@ -4,7 +4,7 @@ import TaskList from "./TaskList.jsx";
 import EditTask from "../components/EditTask.jsx";
 import Filter from "./Filter.jsx";
 import "../components/styles.css";
-import SearchList from "./SearchList.jsx";
+import SearchList from "./searchList.jsx";
 import AppHeader from "../components/AppHeader.jsx";
 
 const Dashboard = () => {
