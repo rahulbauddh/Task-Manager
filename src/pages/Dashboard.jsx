@@ -10,7 +10,7 @@ import AppHeader from "../components/AppHeader.jsx";
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeSection, setActiveSection] = useState("today");
+  const [activeSection, setActiveSection] = useState("all");
   const [taskBeingEdited, setTaskBeingEdited] = useState(null);
   const [isTaskFormVisible, setIsTaskFormVisible] = useState(false);
   const [filters, setFilters] = useState({
@@ -35,7 +35,9 @@ const Dashboard = () => {
   };
 
   const editTask = (updatedTask) => {
-    setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+    setTasks(
+      tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+    );
     setTaskBeingEdited(null);
   };
 
@@ -56,9 +58,7 @@ const Dashboard = () => {
     today.setHours(0, 0, 0, 0);
 
     const sections = {
-      today: tasks.filter(
-        (task) => !task.completed && new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime()
-      ),
+      all: tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)), // Sort all tasks by dueDate
       upcoming: tasks.filter(
         (task) => !task.completed && new Date(task.dueDate) > today
       ),
@@ -75,7 +75,9 @@ const Dashboard = () => {
     const filter = filters[activeSection];
     return getTasksBySection(activeSection).filter((task) => {
       const matchesFilter = filter === "all" || task.priority === filter;
-      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = task.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
       return matchesFilter && matchesSearch;
     });
   };
@@ -100,7 +102,7 @@ const Dashboard = () => {
         <div className="sidebar">
           <h2>Sections</h2>
           <ul>
-            {["today", "upcoming", "overdue", "completed"].map((section) => (
+            {["all", "upcoming", "overdue", "completed"].map((section) => (
               <li key={section}>
                 <button onClick={() => handleSectionChange(section)}>
                   {section.charAt(0).toUpperCase() + section.slice(1)} Tasks
@@ -108,7 +110,10 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
-          <button className="nav-add-task" onClick={() => setIsTaskFormVisible(true)}>
+          <button
+            className="nav-add-task"
+            onClick={() => setIsTaskFormVisible(true)}
+          >
             Add Task
           </button>
         </div>
@@ -116,7 +121,10 @@ const Dashboard = () => {
         <div className="task-content">
           {isTaskFormVisible && (
             <div className="task-form-popup">
-              <TaskForm addTask={addTask} onCancel={() => setIsTaskFormVisible(false)} />
+              <TaskForm
+                addTask={addTask}
+                onCancel={() => setIsTaskFormVisible(false)}
+              />
             </div>
           )}
 
@@ -133,7 +141,9 @@ const Dashboard = () => {
               <>
                 <div className="section-header">
                   <h2>
-                    {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Tasks
+                    {activeSection.charAt(0).toUpperCase() +
+                      activeSection.slice(1)}{" "}
+                    Tasks
                   </h2>
                   <Filter
                     filter={filters[activeSection]}
