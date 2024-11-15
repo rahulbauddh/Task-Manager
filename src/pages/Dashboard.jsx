@@ -14,11 +14,13 @@ const Dashboard = () => {
   const [taskBeingEdited, setTaskBeingEdited] = useState(null);
   const [isTaskFormVisible, setIsTaskFormVisible] = useState(false);
   const [filters, setFilters] = useState({
-    all_tasks: "all",
+    all: "all",
+    today: "all",
     upcoming: "all",
     overdue: "all",
     completed: "all",
   });
+  const [completionFilter, setCompletionFilter] = useState("all"); // New filter for "Completed" and "Incomplete"
 
   useEffect(() => {
     const storedTasks = JSON.parse(localStorage.getItem("tasks"));
@@ -58,7 +60,11 @@ const Dashboard = () => {
     today.setHours(0, 0, 0, 0);
 
     const sections = {
-      all: tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)), // Sort all tasks by dueDate
+      all: tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)),
+      today: tasks.filter(
+        (task) =>
+          new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime()
+      ),
       upcoming: tasks.filter(
         (task) => !task.completed && new Date(task.dueDate) > today
       ),
@@ -73,7 +79,15 @@ const Dashboard = () => {
 
   const filteredTasks = () => {
     const filter = filters[activeSection];
-    return getTasksBySection(activeSection).filter((task) => {
+    let sectionTasks = getTasksBySection(activeSection);
+
+    if (activeSection === "all" && completionFilter !== "all") {
+      sectionTasks = sectionTasks.filter((task) =>
+        completionFilter === "completed" ? task.completed : !task.completed
+      );
+    }
+
+    return sectionTasks.filter((task) => {
       const matchesFilter = filter === "all" || task.priority === filter;
       const matchesSearch = task.title
         .toLowerCase()
@@ -145,11 +159,26 @@ const Dashboard = () => {
                       activeSection.slice(1)}{" "}
                     Tasks
                   </h2>
+
                   <Filter
                     filter={filters[activeSection]}
                     setFilter={setSectionFilter}
                     section={activeSection}
                   />
+                  {activeSection === "all" && (
+                    <div className="completion-filter">
+                      <label htmlFor="completion">Show: </label>
+                      <select
+                        id="completion"
+                        value={completionFilter}
+                        onChange={(e) => setCompletionFilter(e.target.value)}
+                      >
+                        <option value="all">all</option>
+                        <option value="completed">Completed</option>
+                        <option value="incomplete">Incomplete</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <TaskList
