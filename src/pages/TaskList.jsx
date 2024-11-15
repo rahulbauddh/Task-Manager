@@ -6,6 +6,14 @@ const TaskList = ({ tasks, deleteTask, toggleTaskCompletion, onEdit }) => {
     <div className="task-list">
       {tasks.map((task) => (
         <div key={task.id} className="task-item">
+          {/* Tag for Complete/Incomplete status */}
+          <span
+            className={`status-tag ${
+              task.completed ? "complete" : "incomplete"
+            }`}
+          >
+            {task.completed ? "Complete" : "Incomplete"}
+          </span>
           <h3>{task.title}</h3>
           <p>{task.description}</p>
           <p>Due Date: {task.dueDate}</p>
