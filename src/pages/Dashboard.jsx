@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import TaskForm from "./TaskForm.jsx";
 import TaskList from "./TaskList.jsx";
-import EditTask from "./EditTask.jsx";
+import EditTask from "../components/EditTask.jsx";
 import Filter from "./Filter.jsx";
-import "./styles.css";
-import SearchList from "./searchList.jsx";
+import "../components/styles.css";
+import SearchList from "./SearchList.jsx";
 import AppHeader from "../components/AppHeader.jsx";
 
 const Dashboard = () => {
@@ -13,7 +13,6 @@ const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("today");
   const [taskBeingEdited, setTaskBeingEdited] = useState(null);
   const [isTaskFormVisible, setIsTaskFormVisible] = useState(false);
-
   const [filters, setFilters] = useState({
     today: "all",
     upcoming: "all",
@@ -31,14 +30,12 @@ const Dashboard = () => {
   }, [tasks]);
 
   const addTask = (task) => {
-    setTasks([...tasks, { ...task, id: Date.now() }]);
+    setTasks([...tasks, { ...task, id: Date.now(), completed: false }]);
     setIsTaskFormVisible(false);
   };
 
   const editTask = (updatedTask) => {
-    setTasks(
-      tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-    );
+    setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
     setTaskBeingEdited(null);
   };
 
@@ -54,57 +51,33 @@ const Dashboard = () => {
     );
   };
 
-  const filteredTasks = () => {
-    const sectionsOrder = ["today", "upcoming", "overdue", "completed"];
-    let sectionTasks = [];
-
-    for (
-      let i = sectionsOrder.indexOf(activeSection);
-      i < sectionsOrder.length;
-      i++
-    ) {
-      const section = sectionsOrder[i];
-      const sectionData = getTasksBySection(section);
-      const filter = filters[section];
-
-      const matchingTasks = sectionData.filter((task) => {
-        const matchesFilter = filter === "all" || task.priority === filter;
-        const matchesSearch = task.title
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        return matchesFilter && matchesSearch;
-      });
-
-      if (matchingTasks.length > 0) {
-        sectionTasks = matchingTasks;
-        break;
-      }
-    }
-
-    return sectionTasks;
-  };
-
   const getTasksBySection = (section) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const sections = {
       today: tasks.filter(
-        (task) =>
-          new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime() &&
-          !task.completed
+        (task) => !task.completed && new Date(task.dueDate).setHours(0, 0, 0, 0) === today.getTime()
       ),
       upcoming: tasks.filter(
-        (task) =>
-          new Date(task.dueDate).setHours(0, 0, 0, 0) > today && !task.completed
+        (task) => !task.completed && new Date(task.dueDate) > today
       ),
       overdue: tasks.filter(
-        (task) => new Date(task.dueDate) < today && !task.completed
+        (task) => !task.completed && new Date(task.dueDate) < today
       ),
       completed: tasks.filter((task) => task.completed),
     };
 
     return sections[section] || [];
+  };
+
+  const filteredTasks = () => {
+    const filter = filters[activeSection];
+    return getTasksBySection(activeSection).filter((task) => {
+      const matchesFilter = filter === "all" || task.priority === filter;
+      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
   };
 
   const handleSectionChange = (section) => {
@@ -119,10 +92,6 @@ const Dashboard = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const showTaskForm = () => {
-    setIsTaskFormVisible(true);
-  };
-
   return (
     <div className="app">
       <AppHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -131,7 +100,7 @@ const Dashboard = () => {
         <div className="sidebar">
           <h2>Sections</h2>
           <ul>
-            {["daily", "upcoming", "overdue", "completed"].map((section) => (
+            {["today", "upcoming", "overdue", "completed"].map((section) => (
               <li key={section}>
                 <button onClick={() => handleSectionChange(section)}>
                   {section.charAt(0).toUpperCase() + section.slice(1)} Tasks
@@ -139,7 +108,7 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
-          <button className="nav-add-task" onClick={showTaskForm}>
+          <button className="nav-add-task" onClick={() => setIsTaskFormVisible(true)}>
             Add Task
           </button>
         </div>
@@ -147,10 +116,7 @@ const Dashboard = () => {
         <div className="task-content">
           {isTaskFormVisible && (
             <div className="task-form-popup">
-              <TaskForm
-                addTask={addTask}
-                onCancel={() => setIsTaskFormVisible(false)}
-              />
+              <TaskForm addTask={addTask} onCancel={() => setIsTaskFormVisible(false)} />
             </div>
           )}
 
@@ -167,9 +133,7 @@ const Dashboard = () => {
               <>
                 <div className="section-header">
                   <h2>
-                    {activeSection.charAt(0).toUpperCase() +
-                      activeSection.slice(1)}{" "}
-                    Tasks
+                    {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Tasks
                   </h2>
                   <Filter
                     filter={filters[activeSection]}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import "./TaskForm.css";
+import "../components/TaskForm.css";
 
 const TaskForm = ({ addTask, onCancel }) => {
   const [title, setTitle] = useState("");

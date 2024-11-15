@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import "./TaskList.css";
+import "../components/TaskList.css";
 
 const TaskList = ({ tasks, deleteTask, toggleTaskCompletion, onEdit }) => {
   return (

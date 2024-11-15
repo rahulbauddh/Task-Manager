@@ -5,7 +5,6 @@ import PropTypes from "prop-types";
 const AppHeader = ({ searchTerm, setSearchTerm }) => {
   return (
     <header className="app-header">
-      console.log(tasks);
       <h1>Task Manager</h1>
       <div className="search">
         <input
