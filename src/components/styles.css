@@ -9,26 +9,14 @@ body {
   color: #333;
 }
 
+#root {
+  width: 100%;
+}
+
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-}
-
-/* Header styles */
-.app-header {
-  background-color: #4a90e2;
-  color: white;
-  padding: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.app-header h1 {
-  font-weight: 700;
-  margin: 0;
-  font-size: 1.8rem;
 }
 
 /* Dashboard layout */
@@ -46,26 +34,6 @@ body {
   display: flex;
   flex-direction: column;
   background-color: #fafbfc;
-}
-
-/* Search box */
-.search {
-  align-self: flex-end;
-  margin-bottom: 1.5rem;
-}
-
-.search input {
-  padding: 0.7rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  width: 220px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
-
-.search input:focus {
-  border-color: #4a90e2;
-  outline: none;
 }
 
 /* Sidebar (sections) */

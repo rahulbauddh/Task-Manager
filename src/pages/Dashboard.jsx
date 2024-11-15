@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import TaskForm from "./TaskForm";
-import TaskList from "./TaskList";
-import EditTask from "./EditTask";
-import Filter from "./Filter";
+import TaskForm from "./TaskForm.jsx";
+import TaskList from "./TaskList.jsx";
+import EditTask from "./EditTask.jsx";
+import Filter from "./Filter.jsx";
 import "./styles.css";
+import SearchList from "./searchList.jsx";
+import AppHeader from "../components/AppHeader.jsx";
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -123,23 +125,13 @@ const Dashboard = () => {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Task Manager</h1>
-        <div className="search">
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </header>
+      <AppHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <main className="dashboard">
         <div className="sidebar">
           <h2>Sections</h2>
           <ul>
-            {["today", "upcoming", "overdue", "completed"].map((section) => (
+            {["daily", "upcoming", "overdue", "completed"].map((section) => (
               <li key={section}>
                 <button onClick={() => handleSectionChange(section)}>
                   {section.charAt(0).toUpperCase() + section.slice(1)} Tasks
@@ -161,29 +153,39 @@ const Dashboard = () => {
               />
             </div>
           )}
-          <section>
-            {/* Conditionally render section title and filter */}
-            {searchTerm === "" && (
-              <div className="section-header">
-                <h2>
-                  {activeSection.charAt(0).toUpperCase() +
-                    activeSection.slice(1)}{" "}
-                  Tasks
-                </h2>
-                <Filter
-                  filter={filters[activeSection]}
-                  setFilter={setSectionFilter}
-                  section={activeSection}
-                />
-              </div>
-            )}
 
-            <TaskList
-              tasks={filteredTasks()}
-              deleteTask={deleteTask}
-              toggleTaskCompletion={toggleTaskCompletion}
-              onEdit={(task) => setTaskBeingEdited(task)}
-            />
+          <section>
+            {searchTerm ? (
+              <SearchList
+                s_title={searchTerm}
+                tasks={filteredTasks()}
+                deleteTask={deleteTask}
+                toggleTaskCompletion={toggleTaskCompletion}
+                onEdit={(task) => setTaskBeingEdited(task)}
+              />
+            ) : (
+              <>
+                <div className="section-header">
+                  <h2>
+                    {activeSection.charAt(0).toUpperCase() +
+                      activeSection.slice(1)}{" "}
+                    Tasks
+                  </h2>
+                  <Filter
+                    filter={filters[activeSection]}
+                    setFilter={setSectionFilter}
+                    section={activeSection}
+                  />
+                </div>
+
+                <TaskList
+                  tasks={filteredTasks()}
+                  deleteTask={deleteTask}
+                  toggleTaskCompletion={toggleTaskCompletion}
+                  onEdit={(task) => setTaskBeingEdited(task)}
+                />
+              </>
+            )}
           </section>
         </div>
       </main>
