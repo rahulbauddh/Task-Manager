@@ -186,3 +186,7 @@ input:focus, select:focus {
     width: 100%;
   }
 }
+
+.filters * {
+  margin-right: 1.5px;
+}
