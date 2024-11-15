@@ -14,7 +14,7 @@ const Dashboard = () => {
   const [taskBeingEdited, setTaskBeingEdited] = useState(null);
   const [isTaskFormVisible, setIsTaskFormVisible] = useState(false);
   const [filters, setFilters] = useState({
-    today: "all",
+    all_tasks: "all",
     upcoming: "all",
     overdue: "all",
     completed: "all",
